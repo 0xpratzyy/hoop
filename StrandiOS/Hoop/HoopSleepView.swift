@@ -28,6 +28,8 @@ struct HoopSleepView: View {
                     hero
                     if day?.totalSleepMin != nil {
                         timesRow.padding(.top, HoopSpace.xxl + 4)
+                        HoopAISleepInsight(nightKey: insightKey)
+                            .padding(.top, HoopSpace.section)
                         stagesSection
                     }
                     HoopSectionHeader("Last 7 nights") {
@@ -47,6 +49,7 @@ struct HoopSleepView: View {
             .hoopTabRoot("Sleep")
             .hoopNavigationSubtitle(nightLabel)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) { HoopAskButton(topic: .sleep) }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showInfo = true } label: { Image(systemName: "info") }
                         .accessibilityLabel("About sleep")
@@ -61,6 +64,12 @@ struct HoopSleepView: View {
         .task { await load() }
         .onChange(of: repo.refreshSeq) { _, _ in Task { await load() } }
         .sheet(isPresented: $showInfo) { HoopInfoSheet(topic: .sleep) }
+    }
+
+    /// The night an AI insight belongs to: the main block's wake time, else today's row.
+    private var insightKey: String {
+        if let n = lastNight { return "\(n.effectiveStartTs)-\(n.endTs)" }
+        return day?.day ?? Repository.localDayKey(Date())
     }
 
     private var nightLabel: String {

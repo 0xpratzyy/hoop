@@ -62,9 +62,11 @@
 		<true/>
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Hoop connects directly to your WHOOP strap over Bluetooth to read heart rate, R-R intervals, battery, and sensor data locally on your iPhone. Nothing leaves your device.</string>
+	<string>Hoop connects directly to your WHOOP strap over Bluetooth to read heart rate, R-R intervals, battery and sensor data, and keeps it on your iPhone.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Hoop uses the camera when you photograph a meal, so Hoop AI can estimate its calories. A photo is only sent when you tap Estimate.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Hoop reads your own Apple Health data on-device to compute recovery, strain, and sleep. Nothing leaves your device.</string>
+	<string>Hoop reads your own Apple Health data to compute recovery, strain and sleep on your iPhone.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Hoop writes the metrics it computes from your strap back into Apple Health, on-device and only when you allow it.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

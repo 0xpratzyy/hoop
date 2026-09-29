@@ -71,6 +71,7 @@ struct HoopFuelView: View {
             .hoopTabRoot("Fuel")
             .hoopNavigationSubtitle(HoopFormat.longDate())
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) { HoopAskButton(topic: .fuel) }
                 if plan.configured {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button { showSettings = true } label: { Image(systemName: "slider.horizontal.3") }
@@ -128,7 +129,7 @@ struct HoopFuelView: View {
             Button { showGoal = true } label: { Text("Set my goal") }
                 .buttonStyle(HoopPrimaryButtonStyle())
                 .padding(.top, HoopSpace.xl + 4)
-            Text("Optional. Everything stays on this iPhone.")
+            Text("Optional. Your log stays on this iPhone.")
                 .font(HoopFont.caption)
                 .foregroundStyle(HoopColor.textTertiary)
                 .padding(.top, HoopSpace.m)
@@ -555,6 +556,11 @@ struct HoopAddFoodSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                HoopAIFoodAssist { estimate in
+                    name = estimate.name
+                    kcal = "\(estimate.kcal)"
+                    protein = estimate.protein.map { String(format: "%.0f", $0) } ?? ""
+                }
                 Section {
                     TextField("What did you eat?", text: $name)
                     TextField("Calories", text: $kcal)
@@ -597,7 +603,7 @@ struct HoopAddFoodSheet: View {
                     .disabled((Int(kcal) ?? 0) <= 0)
                 }
             }
-            .onAppear { kcalFocused = true }
+            .onAppear { if !HoopAI.shared.isConnected { kcalFocused = true } }
         }
         .presentationDetents([.medium, .large])
     }

@@ -296,10 +296,11 @@ targets:
           # #1538: finishes a re-score that a backgrounded offload started and could not complete. The
           # only BGProcessingTask of the three; the other two are refresh tasks.
           - $(PRODUCT_BUNDLE_IDENTIFIER).rescore
-        NSBluetoothAlwaysUsageDescription: "Hoop connects directly to your WHOOP strap over Bluetooth to read heart rate, R-R intervals, battery, and sensor data locally on your iPhone. Nothing leaves your device."
+        NSBluetoothAlwaysUsageDescription: "Hoop connects directly to your WHOOP strap over Bluetooth to read heart rate, R-R intervals, battery and sensor data, and keeps it on your iPhone."
         NSLocationWhenInUseUsageDescription: "Hoop records your route during an outdoor workout to show distance, pace, and a map, and keeps recording while the screen is off. The route stays on your device. Nothing leaves it."
-        NSHealthShareUsageDescription: "Hoop reads your own Apple Health data on-device to compute recovery, strain, and sleep. Nothing leaves your device."
+        NSHealthShareUsageDescription: "Hoop reads your own Apple Health data to compute recovery, strain and sleep on your iPhone."
         NSHealthUpdateUsageDescription: "Hoop writes the metrics it computes from your strap back into Apple Health, on-device and only when you allow it."
+        NSCameraUsageDescription: "Hoop uses the camera when you photograph a meal, so Hoop AI can estimate its calories. A photo is only sent when you tap Estimate."
         NSMotionUsageDescription: "Hoop reads your iPhone's step count for a walking or running workout to show steps in the activity summary. It stays on your device. Nothing leaves it."
         # K4: Coach voice input. Speech is transcribed ON-DEVICE ONLY (requiresOnDeviceRecognition);
         # the mic button is disabled where the locale doesn't support that, never falls back to

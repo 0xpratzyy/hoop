@@ -27,6 +27,8 @@ struct HoopTodayView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     hero
+                    HoopAIBriefing(snapshot: snap)
+                        .padding(.top, HoopSpace.section)
                     scores
                         .padding(.top, HoopSpace.section + 4)
                     HoopLiveHeartCard(curve: snap.hrCurve, range: snap.hrCurveRange) { showLive = true }
@@ -52,6 +54,7 @@ struct HoopTodayView: View {
             .hoopTabRoot("Today")
             .hoopNavigationSubtitle(HoopFormat.longDate())
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) { HoopAskButton(topic: .today) }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showStrap = true } label: { HoopStrapStatus() }
                 }

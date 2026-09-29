@@ -265,7 +265,7 @@ private struct HoopPromiseStep: View {
                 note("Not a medical device",
                      "Every score is an estimate for general wellness. Don't use Hoop to diagnose or treat anything.")
                 note("Everything stays on this iPhone",
-                     "Your data is stored and scored locally. There is no Hoop account and no Hoop server.")
+                     "Your data is stored and scored locally. There is no Hoop account and no Hoop server. Optional Hoop AI sends a summary to OpenAI only when you use it.")
                 note("Still experimental",
                      "WHOOP 4.0 has the fullest support. On WHOOP 5.0 / MG live heart rate works well, while sleep and recovery are still improving.")
             }
@@ -728,7 +728,7 @@ private struct HoopProfileStep: View {
     @EnvironmentObject private var profile: ProfileStore
     var body: some View {
         HoopStepScaffold(title: "About you",
-                         subtitle: "Used for calories, heart-rate zones and your baselines. It never leaves this iPhone.") {
+                         subtitle: "Used for calories, heart-rate zones and your baselines. It stays on this iPhone.") {
             VStack(alignment: .leading, spacing: HoopSpace.m) {
                 HoopProfileForm()
                 Label("Estimated max heart rate: \(profile.hrMax) bpm", systemImage: "heart")

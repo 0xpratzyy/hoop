@@ -61,6 +61,8 @@ struct HoopYouView: View {
                         }
                     }
 
+                    HoopAISettingsGroup()
+
                     HoopGroupLabel("Connections")
                     HoopGroup {
                         link(.appleHealth, title: "Apple Health", value: String(localized: "Read and write"))
@@ -216,7 +218,7 @@ struct HoopAboutView: View {
                             .font(HoopFont.subhead)
                             .foregroundStyle(HoopColor.textSecondary)
                     }
-                    Text("A free, offline companion for WHOOP straps. Hoop pairs over Bluetooth, keeps everything on this iPhone, and computes recovery, strain, heart rate variability and sleep itself.")
+                    Text("A free companion for WHOOP straps. Hoop pairs over Bluetooth, keeps your data on this iPhone, and computes recovery, strain, heart rate variability and sleep itself. Optional Hoop AI uses your ChatGPT plan and sends a summary to OpenAI only when you use it.")
                         .font(HoopFont.callout)
                         .foregroundStyle(HoopColor.textSecondary)
                         .multilineTextAlignment(.center)
