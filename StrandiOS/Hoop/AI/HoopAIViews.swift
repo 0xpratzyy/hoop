@@ -43,8 +43,13 @@ struct HoopChatGPTButton: View {
                     if ai.auth.isSigningIn {
                         ProgressView().tint(HoopColor.canvas)
                     } else {
-                        Image(systemName: "bubble.left.and.text.bubble.right.fill")
-                            .font(.system(size: 15, weight: .semibold))
+                        // OpenAI's own mark from the Sign in with ChatGPT button kit: the black logo on a
+                        // white button ("Continue with ChatGPT", black logo), used as supplied.
+                        Image("ChatGPTLogoBlack")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 20, height: 20)
+                            .accessibilityHidden(true)
                     }
                     Text("Continue with ChatGPT")
                 }
