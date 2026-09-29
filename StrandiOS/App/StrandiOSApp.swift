@@ -52,6 +52,8 @@ struct StrandiOSApp: App {
     @AppStorage(UnitPrefs.systemKey) private var unitSystemRaw = UnitSystem.metric.rawValue
 
     init() {
+        // Hoop reads strain on WHOOP's familiar 0–21 scale unless the wearer picks 0–100.
+        UserDefaults.standard.register(defaults: [UnitPrefs.effortScaleKey: EffortScale.whoop.rawValue])
         // #1008: pin the pre-change Overnight-only default for existing installs before
         // anything reads it. Idempotent; a no-op on fresh installs and after the first launch.
         PuffinExperiment.migrateContinuousHrvOvernightDefault()
@@ -161,6 +163,17 @@ struct StrandiOSApp: App {
         }
     }
 
+    /// Dark for the Hoop shell. The DEBUG `--demo-screen` harness renders single NOOP screens and keeps
+    /// honouring the Appearance preference so those captures can still be taken in either scheme.
+    private var rootColorScheme: ColorScheme? {
+        #if DEBUG
+        if CommandLine.arguments.contains("--demo-screen") {
+            return AppearanceMode.resolve(appearanceRaw).colorScheme
+        }
+        #endif
+        return .dark
+    }
+
     /// The Shortcut-import alert's presentation binding, hoisted OUT of the `.alert` chain.
     ///
     /// An inline `Binding(get:set:)` is two untyped closures the solver must infer in place, on a
@@ -218,7 +231,10 @@ struct StrandiOSApp: App {
                 // v5 L3: the shared stress check-in nudge surface, so the Breathe screen's passive
                 // card observes the SAME instance the central detector (AppModel.evaluateStress) posts to.
                 .environment(\.stressNudgeCenter, model.stressNudgeCenter)
-                .preferredColorScheme(AppearanceMode.resolve(appearanceRaw).colorScheme)
+                // Hoop is dark-only. Resolving the NOOP Appearance picker here let a phone in Light mode
+                // put the whole shell (tab bar, sheets, pickers, nav titles) in light chrome over Hoop's
+                // dark canvas, because this outer preference outranks HoopRootView's own `.dark`.
+                .preferredColorScheme(rootColorScheme)
                 // Match SwiftUI format styles to the localization selected by the app's bundles. Language
                 // changes are process-wide on Apple and are applied after the documented reopen.
                 .environment(\.locale, AppLanguage.activeLocale)
@@ -435,14 +451,6 @@ struct StrandiOSApp: App {
 /// excluded `RootView()` sidebar for `RootTabView()`. The shared `OnboardingWizard`, `TermsGateView`,
 /// `WhatsNewView`, `AppChangelog`, and `Terms` symbols all compile into the iOS target unchanged.
 private struct iOSRootView: View {
-    @AppStorage("noop.onboarded") private var onboarded = false
-    @AppStorage("noop.lastSeenChangelogVersion") private var lastSeenChangelog = ""
-    @AppStorage("noop.acceptedTermsVersion") private var acceptedTerms = ""
-    @State private var showWhatsNew = false
-    /// Starts false so a cold-launch external action can't race this view's onAppear decision about the
-    /// automatic What's New sheet. It becomes true only when no sheet is due or its dismissal completes.
-    @State private var automaticLaunchSheetResolved = false
-
     var body: some View {
         #if DEBUG
         // DEBUG-only: `--demo-screen <name>` renders one screen full-bleed (gates bypassed) so a
@@ -463,62 +471,13 @@ private struct iOSRootView: View {
         return AnyView(shell)
     }
 
+    /// Hoop's shell owns first run (its own onboarding covers the terms and pairing), so the NOOP gates
+    /// and the sideload update check are not layered over it.
     private var shell: some View {
-        ZStack {
-            RootTabView(homeScreenQuickActionsEnabled:
-                demoBypass || (onboarded && acceptedTerms == Terms.currentVersion
-                    && automaticLaunchSheetResolved))
-            if !onboarded && !demoBypass {
-                OnboardingWizard(onFinished: {
-                    onboarded = true
-                    // A brand-new user just saw the expectations in onboarding — don't also pop the
-                    // changelog at them; mark them current.
-                    lastSeenChangelog = AppChangelog.currentVersion
-                })
-                .transition(.opacity)
-                .zIndex(1)
+        HoopRootView()
+            .onAppear {
+                if demoBypass { UserDefaults.standard.set(true, forKey: "hoop.onboarded") }
             }
-            // Terms acknowledgment gate — over EVERYTHING (before onboarding/pairing/Bluetooth) until
-            // the current terms version is accepted; re-appears if the terms materially change.
-            if acceptedTerms != Terms.currentVersion && !demoBypass {
-                TermsGateView(onAccept: {
-                    // Keep any external action behind the gate while the accepted-terms change decides
-                    // whether What's New must present next. This write must precede acceptedTerms.
-                    automaticLaunchSheetResolved = false
-                    acceptedTerms = Terms.currentVersion
-                })
-                    .transition(.opacity)
-                    .zIndex(2)
-            }
-        }
-        .animation(.easeInOut(duration: 0.35), value: onboarded)
-        .animation(.easeInOut(duration: 0.35), value: acceptedTerms)
-        .sheet(isPresented: $showWhatsNew, onDismiss: { automaticLaunchSheetResolved = true }) {
-            WhatsNewView(onClose: {
-                lastSeenChangelog = AppChangelog.currentVersion
-                showWhatsNew = false
-            })
-        }
-        // The Terms gate must stay "over everything" — don't pop What's New on top of it after a
-        // combined terms+version update. Gate on terms being current, and re-check when they're
-        // accepted (onAppear already fired before acceptance), so What's New shows right after.
-        .onAppear {
-            showWhatsNewIfDue()
-            // Seed the current What's New into the Updates inbox (idempotent per version) so the bell
-            // collects it even if the user dismisses the auto sheet.
-            UpdateStore.shared.seedWhatsNewIfNeeded()
-            // #1659: iOS cannot auto-update a sideloaded build - no API lets an app install or re-sign an
-            // .ipa - so the most NOOP can do is NOTICE a release and say so.
-            //
-            // Gated on the SAME condition as showWhatsNewIfDue above, and the Android hook. This matters
-            // now that the check is on by default: without it a brand-new install would reach the network
-            // during first run, before the Terms gate the user has not accepted yet. While the default was
-            // off, nothing made that visible.
-            if onboarded && acceptedTerms == Terms.currentVersion {
-                UpdateWatch.runIfDue(currentVersion: UpdateWatch.installedVersion, sideloadHint: true)
-            }
-        }
-        .onChange(of: acceptedTerms) { _, _ in showWhatsNewIfDue() }
     }
 
     /// DEBUG: launched with --demo-seed, skip the first-run gates (onboarding / terms / What's New) so the
@@ -531,20 +490,6 @@ private struct iOSRootView: View {
         #endif
     }
 
-    private func showWhatsNewIfDue() {
-        if demoBypass {
-            automaticLaunchSheetResolved = true
-            return
-        }
-        // Existing users who updated: their last-seen version is behind the current one.
-        if onboarded && acceptedTerms == Terms.currentVersion
-            && lastSeenChangelog != AppChangelog.currentVersion {
-            automaticLaunchSheetResolved = false
-            showWhatsNew = true
-        } else {
-            automaticLaunchSheetResolved = true
-        }
-    }
 }
 
 #if DEBUG

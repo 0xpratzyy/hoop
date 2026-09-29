@@ -351,9 +351,10 @@ final class GpsWorkoutRecorder: NSObject, ObservableObject {
         manager.distanceFilter = 5
         #if os(iOS)
         // Keep the route accruing while the screen is off, matching Android's foreground-service capture.
-        // Safe only because the iOS target declares the `location` UIBackgroundMode (project.yml); setting
-        // this without that mode would crash when updates start.
-        manager.allowsBackgroundLocationUpdates = true
+        // Only when the target declares the `location` UIBackgroundMode: setting this without that mode
+        // crashes. Hoop does not record GPS routes, so its build leaves the mode out.
+        let modes = Bundle.main.object(forInfoDictionaryKey: "UIBackgroundModes") as? [String] ?? []
+        manager.allowsBackgroundLocationUpdates = modes.contains("location")
         manager.pausesLocationUpdatesAutomatically = false
         manager.activityType = .fitness
         #endif

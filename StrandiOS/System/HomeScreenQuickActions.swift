@@ -48,7 +48,8 @@ enum HomeScreenQuickAction: String, CaseIterable {
 
     @MainActor
     static func install(in application: UIApplication) {
-        application.shortcutItems = allCases.map(\.shortcutItem)
+        // Hoop's icon menu offers live heart rate only; the other NOOP actions have no Hoop screen.
+        application.shortcutItems = [liveHeartRate.shortcutItem]
     }
 }
 
