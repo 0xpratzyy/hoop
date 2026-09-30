@@ -21,7 +21,7 @@ settings:
     # iOS build number (CFBundleVersion). GLOBAL so the iOS app AND its widget extension inherit the
     # SAME value — they must match or iOS warns "extension version must match parent app" (#416).
     # macOS sets its own CFBundleVersion on the Strand target and is unaffected by this.
-    CURRENT_PROJECT_VERSION: "2"
+    CURRENT_PROJECT_VERSION: "3"
     SWIFT_VERSION: "5.0"
     # Emit localizable strings so Xcode auto-extracts every LocalizedStringKey into the
     # String Catalog on build (the English (US) base entries).
@@ -272,8 +272,10 @@ targets:
           - UIInterfaceOrientationLandscapeRight
         UIBackgroundModes:
           - bluetooth-central
-          # Hoop has no GPS route recording, so the `location` mode is left out (GpsWorkoutRecorder only
-          # enables background updates when the mode is declared).
+          # Outdoor activities started from Train record their GPS route with the screen off, matching
+          # Android's foreground-service capture. GpsWorkoutRecorder enables background updates only
+          # when this mode is declared.
+          - location
           # #510: the scheduled debug auto-export submits a BGAppRefreshTaskRequest so iOS can wake the
           # backgrounded app near the user's chosen time to write the overnight strap-log drop. BGAppRefresh
           # needs the "fetch" background mode; the task id below must also be permitted (and registered at

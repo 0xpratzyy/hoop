@@ -226,7 +226,7 @@ struct HoopAIWelcomeSheet: View {
 
 /// Where Ask Hoop opens from; it picks the starter questions.
 enum HoopAskTopic {
-    case today, sleep, fuel
+    case today, sleep, train, fuel
 
     var suggestions: [String] {
         switch self {
@@ -238,6 +238,10 @@ enum HoopAskTopic {
             return [String(localized: "How can I get more deep sleep?"),
                     String(localized: "What time should I go to bed tonight?"),
                     String(localized: "How consistent has my sleep been?")]
+        case .train:
+            return [String(localized: "What should I train today?"),
+                    String(localized: "How hard should my session be?"),
+                    String(localized: "How has my training load looked this week?")]
         case .fuel:
             return [String(localized: "What should I eat for the rest of today?"),
                     String(localized: "Am I on track for my goal?"),

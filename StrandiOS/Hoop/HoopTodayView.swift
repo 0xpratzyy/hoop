@@ -5,7 +5,8 @@ import WhoopStore
 import StrandAnalytics
 
 /// Hoop's home. One hoop, recovery, carries the screen; strain and sleep sit quietly beneath it, then
-/// the heart, the overnight vitals and today's activity, set as type rather than tiles.
+/// the heart, the vitals the person chose (`HoopVitalsSection`) and today's activity, set as type rather
+/// than tiles.
 struct HoopTodayView: View {
     @EnvironmentObject private var repo: Repository
     @EnvironmentObject private var profile: ProfileStore
@@ -34,17 +35,8 @@ struct HoopTodayView: View {
                         .padding(.top, HoopSpace.section + 4)
                     HoopLiveHeartCard(curve: snap.hrCurve, range: snap.hrCurveRange) { showLive = true }
                         .padding(.top, HoopSpace.m)
-                    HoopSectionHeader("Vitals") {
-                        Button { infoTopic = .vitals } label: {
-                            Image(systemName: "info.circle")
-                                .font(.body)
-                                .foregroundStyle(HoopColor.textTertiary)
-                                .frame(minWidth: 44, minHeight: 32, alignment: .trailing)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("About vitals")
-                    }
-                    vitals
+                    // The vitals the person chose, in their order (StrandiOS/Hoop/Vitals).
+                    HoopVitalsSection(snapshot: snap)
                     HoopSectionHeader("Activity")
                     activity
                     footnote
@@ -272,67 +264,6 @@ struct HoopTodayView: View {
             return String(localized: "\(HoopFormat.hoursMinutes(m)) of \(HoopFormat.hoursMinutes(need)) needed")
         }
         return String(localized: "\(HoopFormat.hoursMinutes(m)) asleep")
-    }
-
-    // MARK: Vitals
-
-    private var vitals: some View {
-        HoopGroup {
-            vitalRow("HRV", value: HoopFormat.int(snap.hrv), unit: "ms", trend: snap.hrvWeek,
-                     caption: trendCaption(snap.hrvWeek, higherIsBetter: true))
-            vitalRow("Resting heart rate", value: HoopFormat.int(snap.restingHr), unit: "bpm", trend: snap.rhrWeek,
-                     caption: trendCaption(snap.rhrWeek, higherIsBetter: false))
-            vitalRow("Respiratory rate", value: snap.respRate.map { String(format: "%.1f", $0) } ?? HoopFormat.dash,
-                     unit: "rpm", trend: [], caption: String(localized: "Breaths per minute asleep"))
-            if let spo2 = snap.spo2 {
-                vitalRow("Blood oxygen", value: "\(Int(spo2.rounded()))", unit: "%", trend: [],
-                         caption: String(localized: "Average overnight"), last: true)
-            } else {
-                vitalRow("Skin temperature", value: snap.skinTempDev.map { String(format: "%+.1f", $0) } ?? HoopFormat.dash,
-                         unit: "°C", trend: [], caption: String(localized: "Versus your baseline"), last: true)
-            }
-        }
-    }
-
-    private func vitalRow(_ title: LocalizedStringKey, value: String, unit: String, trend: [Double?],
-                          caption: String, last: Bool = false) -> some View {
-        let showTrend = trend.compactMap({ $0 }).count >= 2 && !typeSize.isAccessibilitySize
-        let layout = typeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6))
-            : AnyLayout(HStackLayout(alignment: .center, spacing: HoopSpace.m))
-        return HoopRowContainer(last: last) {
-            layout {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(HoopFont.body)
-                        .foregroundStyle(HoopColor.text)
-                    Text(caption)
-                        .font(HoopFont.footnote)
-                        .foregroundStyle(HoopColor.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                if !typeSize.isAccessibilitySize { Spacer(minLength: HoopSpace.s) }
-                if showTrend {
-                    HoopSparkline(values: trend, tint: HoopColor.textTertiary, lineWidth: 1.5)
-                        .frame(width: 44, height: 22)
-                }
-                HoopValue(value: value, unit: unit, font: HoopFont.value(.title3))
-                    .frame(minWidth: typeSize.isAccessibilitySize ? 0 : 72, alignment: .trailing)
-            }
-        }
-        .accessibilityElement(children: .combine)
-    }
-
-    /// "↑ 6% vs your week" style caption comparing the latest value with the week's mean.
-    private func trendCaption(_ week: [Double?], higherIsBetter: Bool) -> String {
-        let vals = week.compactMap { $0 }
-        guard vals.count >= 3, let last = vals.last else { return String(localized: "Overnight average") }
-        let base = vals.dropLast().reduce(0, +) / Double(vals.count - 1)
-        guard base > 0 else { return String(localized: "Overnight average") }
-        let delta = (last - base) / base * 100
-        if abs(delta) < 2 { return String(localized: "In line with your week") }
-        let arrow = delta > 0 ? "↑" : "↓"
-        return "\(arrow) \(Int(abs(delta).rounded()))% " + String(localized: "vs your week")
     }
 
     // MARK: Activity

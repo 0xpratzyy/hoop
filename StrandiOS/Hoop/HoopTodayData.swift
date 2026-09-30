@@ -34,6 +34,21 @@ struct HoopTodaySnapshot: Equatable {
     var hrCurveRange: ClosedRange<Double>? = nil
     var loaded = false
 
+    // Provenance, for the Vitals section: the key of the day row each value above was read from (today's
+    // own row, or the prior night it was carried from), set beside the value from the SAME row, so a
+    // "Last night · 28 Sep" caption can never name a different night than the number next to it.
+    /// The day key the loader resolved as today (today's row, else the logical day).
+    var todayKey: String = ""
+    var hrvDay: String?
+    var restingHrDay: String?
+    var respRateDay: String?
+    var spo2Day: String?
+    var skinTempDay: String?
+    /// The day the shown recovery was scored for: today when scored, the carried day when carried.
+    var chargeDay: String?
+    /// The day of the sleep score shown (today's, or last night's carried inside the freshness window).
+    var sleepScoreDay: String?
+
     /// True once the wearer has any strap history at all; drives the first-run empty state.
     var hasAnyData: Bool {
         charge.pct != nil || strain != nil || sleepMinutes != nil || hrv != nil || !hrCurve.isEmpty
@@ -70,6 +85,19 @@ enum HoopTodayLoader {
         s.respRate = day?.respRateBpm ?? respDay?.respRateBpm
         s.spo2 = day?.spo2Pct ?? vitalsDay?.spo2Pct
         s.skinTempDev = day?.skinTempDevC ?? vitalsDay?.skinTempDevC
+        // Which row each vital above came from, mirroring each `??` exactly (additive; the values are
+        // resolved above and unchanged).
+        s.todayKey = todayKey
+        s.hrvDay = day?.avgHrv != nil ? day?.day : hrvDay?.day
+        s.restingHrDay = day?.restingHr != nil ? day?.day : rhrDay?.day
+        s.respRateDay = day?.respRateBpm != nil ? day?.day : respDay?.day
+        s.spo2Day = day?.spo2Pct != nil ? day?.day : (vitalsDay?.spo2Pct != nil ? vitalsDay?.day : nil)
+        s.skinTempDay = day?.skinTempDevC != nil ? day?.day : (vitalsDay?.skinTempDevC != nil ? vitalsDay?.day : nil)
+        switch s.charge {
+        case .scored: s.chargeDay = todayKey
+        case .carried: s.chargeDay = prior?.day
+        case .calibrating, .noData: s.chargeDay = nil
+        }
 
         // Sleep: minutes from today's row, score from the fresh-only series.
         s.sleepMinutes = day?.totalSleepMin
@@ -79,6 +107,7 @@ enum HoopTodayLoader {
         s.sleepScore = TodayView.freshRestScore(todayValue: restByDay[todayKey], lastDay: restSeries.last?.day,
                                                 lastValue: restSeries.last?.value, isTodaySelected: true,
                                                 todayKey: todayKey)
+        s.sleepScoreDay = restByDay[todayKey] != nil ? todayKey : (s.sleepScore != nil ? restSeries.last?.day : nil)
 
         // Today's heart rate: live strain, calories and the day curve all read the same window.
         let dayStart = cal.startOfDay(for: now)

@@ -1,21 +1,27 @@
 #if os(iOS)
+import StrandDesign
 import SwiftUI
 
 enum HoopTab: Hashable {
-    case today, sleep, fuel, you
+    case today, sleep, train, fuel, you
 }
 
-/// Hoop's shell: four tabs, with the first-run flow laid over them until it is finished.
+/// Hoop's shell: five tabs, with the first-run flow laid over them until it is finished. A running gym
+/// session or activity rides above the tab bar on every tab, since a workout outlives the screen it
+/// started on.
 struct HoopRootView: View {
     @AppStorage("hoop.onboarded") private var onboarded = false
 
     @EnvironmentObject private var repo: Repository
     @EnvironmentObject private var router: NavRouter
     @EnvironmentObject private var homeScreenQuickActions: HomeScreenQuickActionSceneDelegate
+    @EnvironmentObject private var liftSession: LiftSessionController
+    @EnvironmentObject private var model: AppModel
 
     @State private var tab: HoopTab = HoopRootView.launchTab
     @State private var showDevices = false
     @State private var showLive = false
+    @State private var showActivity = false
 
     var body: some View {
         ZStack {
@@ -26,6 +32,9 @@ struct HoopRootView: View {
                 HoopSleepView()
                     .tabItem { Label("Sleep", systemImage: "moon.fill") }
                     .tag(HoopTab.sleep)
+                HoopTrainView()
+                    .tabItem { Label("Train", systemImage: "dumbbell.fill") }
+                    .tag(HoopTab.train)
                 HoopFuelView()
                     .tabItem { Label("Fuel", systemImage: "flame.fill") }
                     .tag(HoopTab.fuel)
@@ -52,7 +61,7 @@ struct HoopRootView: View {
             guard let dest else { return }
             switch dest {
             case .devices: showDevices = true
-            case .activeWorkout: showLive = true
+            case .activeWorkout: showActivity = true
             default: break
             }
             router.requestedDestination = nil
@@ -71,6 +80,22 @@ struct HoopRootView: View {
             }
         }
         .sheet(isPresented: $showLive) { HoopLiveHeartView() }
+        // The running gym session: NOOP's set-by-set sheet, owned at the app root so swiping it away
+        // minimises the session rather than ending it.
+        .sheet(isPresented: $liftSession.isPresented) {
+            LiftSessionView { }
+                .preferredColorScheme(.dark)
+        }
+        .fullScreenCover(isPresented: $showActivity) { HoopLiveActivityView() }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if onboarded, liftSession.isActive || model.activeWorkout != nil {
+                HoopWorkoutBar(openActivity: { showActivity = true })
+                    .padding(.horizontal, HoopSpace.gutter)
+                    .padding(.bottom, NoopMetrics.tabBarClearance)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: liftSession.isActive || model.activeWorkout != nil)
     }
 
     /// DEBUG screenshot aid: `--hoop-tab sleep|fuel|you` opens on that tab.
@@ -80,6 +105,7 @@ struct HoopRootView: View {
         if let i = args.firstIndex(of: "--hoop-tab"), i + 1 < args.count {
             switch args[i + 1] {
             case "sleep": return .sleep
+            case "train": return .train
             case "fuel": return .fuel
             case "you": return .you
             default: return .today

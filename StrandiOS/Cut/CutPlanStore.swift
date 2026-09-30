@@ -125,9 +125,15 @@ final class CutPlanStore: ObservableObject {
 
     // MARK: Weight
 
-    func logWeight(_ kg: Double) {
+    /// Records a weigh-in, now or back-dated. The latest one by date anchors the weight estimate.
+    func logWeight(_ kg: Double, at date: Date = Date()) {
         guard kg > 0 else { return }
-        weighIns.append(WeighIn(kg: kg, at: Date()))
+        weighIns.append(WeighIn(kg: kg, at: min(date, Date())))
+    }
+
+    /// Removes a weigh-in logged by mistake; the estimate falls back to the next latest one.
+    func removeWeighIn(_ id: UUID) {
+        weighIns.removeAll { $0.id == id }
     }
 
     // MARK: Math (Mifflin–St Jeor)
