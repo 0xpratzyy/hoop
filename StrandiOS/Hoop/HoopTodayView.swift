@@ -1,4 +1,5 @@
 #if os(iOS)
+import StrandDesign
 import SwiftUI
 import WhoopStore
 import StrandAnalytics
@@ -560,6 +561,7 @@ struct HoopHeartGlyph: View {
     var size: CGFloat = 14
     var color: Color = HoopColor.heart
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ObservedObject private var motion = NoopMotionState.shared
     @State private var beat = false
 
     var body: some View {
@@ -568,7 +570,7 @@ struct HoopHeartGlyph: View {
             .foregroundStyle(bpm == nil ? HoopColor.textTertiary : color)
             .scaleEffect(beat ? 1.16 : 1)
             .task(id: bpm) {
-                guard let bpm, bpm > 20, !reduceMotion else { beat = false; return }
+                guard let bpm, bpm > 20, !motion.poseStill(reduceMotion) else { beat = false; return }
                 let period = 60.0 / Double(bpm)
                 while !Task.isCancelled {
                     withAnimation(.easeOut(duration: period * 0.22)) { beat = true }

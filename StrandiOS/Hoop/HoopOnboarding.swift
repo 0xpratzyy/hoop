@@ -1,4 +1,5 @@
 #if os(iOS)
+import StrandDesign
 import SwiftUI
 import UIKit
 
@@ -601,9 +602,10 @@ struct HoopRadar: View {
     let active: Bool
     let found: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ObservedObject private var motion = NoopMotionState.shared
     @State private var pulse = false
 
-    private var animating: Bool { active && !reduceMotion }
+    private var animating: Bool { active && !motion.poseStill(reduceMotion) }
 
     var body: some View {
         ZStack {

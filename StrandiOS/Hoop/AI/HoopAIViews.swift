@@ -1,6 +1,7 @@
 #if os(iOS)
 import MarkdownUI
 import PhotosUI
+import StrandDesign
 import SwiftUI
 import UIKit
 
@@ -433,10 +434,14 @@ struct HoopAskView: View {
     }
 }
 
-/// Three dots that breathe while Hoop AI is thinking. Still under Reduce Motion.
+/// Three dots that breathe while Hoop AI is thinking. Still under Reduce Motion, Low Power Mode and the
+/// app's own "Reduce motion" setting (`NoopMotionState`).
 struct HoopThinking: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ObservedObject private var motion = NoopMotionState.shared
     @State private var on = false
+
+    private var still: Bool { motion.poseStill(reduceMotion) }
 
     var body: some View {
         HStack(spacing: 5) {
@@ -444,8 +449,8 @@ struct HoopThinking: View {
                 Circle()
                     .fill(HoopColor.textSecondary)
                     .frame(width: 7, height: 7)
-                    .opacity(reduceMotion ? 0.6 : (on ? 1 : 0.25))
-                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.6).repeatForever().delay(Double(i) * 0.18), value: on)
+                    .opacity(still ? 0.6 : (on ? 1 : 0.25))
+                    .animation(still ? nil : .easeInOut(duration: 0.6).repeatForever().delay(Double(i) * 0.18), value: on)
             }
         }
         .padding(.vertical, 6)

@@ -1,4 +1,5 @@
 #if os(iOS)
+import StrandDesign
 import SwiftUI
 
 // MARK: - Hoop design language
@@ -562,16 +563,20 @@ struct HoopStat: View {
 
 // MARK: - Live indicator
 
-/// A small dot that breathes while live. Still under Reduce Motion.
+/// A small dot that breathes while live. Still under Reduce Motion, Low Power Mode and the app's own
+/// "Reduce motion" setting (`NoopMotionState`).
 struct HoopLiveDot: View {
     var tint: Color = HoopColor.recoveryHigh
     var active = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ObservedObject private var motion = NoopMotionState.shared
     @State private var pulse = false
+
+    private var still: Bool { motion.poseStill(reduceMotion) }
 
     var body: some View {
         ZStack {
-            if active && !reduceMotion {
+            if active && !still {
                 Circle().fill(tint.opacity(0.4))
                     .frame(width: 12, height: 12)
                     .scaleEffect(pulse ? 1.6 : 0.6)
@@ -581,7 +586,7 @@ struct HoopLiveDot: View {
         }
         .frame(width: 14, height: 14)
         .onAppear {
-            guard active, !reduceMotion else { return }
+            guard active, !still else { return }
             withAnimation(.easeOut(duration: 1.6).repeatForever(autoreverses: false)) { pulse = true }
         }
         .accessibilityHidden(true)
