@@ -103846,6 +103846,64 @@
         }
       }
     },
+    "Hoop can read a coarse menstrual-cycle phase from your nightly skin temperature, entirely on your device. It is awareness only: not contraception, not a fertility predictor, not a medical service.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoop kann eine grobe Menstruationszyklus-Phase aus deiner nächtlichen Hauttemperatur ablesen, komplett auf deinem Gerät. Es dient nur dem Bewusstsein: keine Verhütung, kein Fruchtbarkeits-Vorhersager, kein medizinischer Dienst."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoop puede leer una fase aproximada del ciclo menstrual a partir de tu temperatura de la piel nocturna, completamente en tu dispositivo. Es solo información: no es anticoncepción, ni un predictor de fertilidad, ni un servicio médico."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoop peut lire une phase approximative du cycle menstruel à partir de votre température cutanée nocturne, entièrement sur votre appareil. Cela sert uniquement à informer : ce n'est ni une contraception, ni un prédicteur de fertilité, ni un service médical."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoop può leggere una fase approssimativa del ciclo mestruale dalla tua temperatura cutanea notturna, interamente sul tuo dispositivo. È solo a scopo informativo: non è un metodo contraccettivo, non è un predittore di fertilità, non è un servizio medico."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Hoop pode ler uma fase aproximada do ciclo menstrual a partir da temperatura noturna da tua pele, inteiramente no teu dispositivo. É apenas consciência: não é contracepção, não é um indicador de fertilidade, não é um serviço médico."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoop может определять приблизительную фазу менструального цикла по ночной температуре кожи, полностью на вашем устройстве. Это только информирование: не контрацепция, не предсказание фертильности и не медицинская услуга."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoop 可以从你的夜间皮肤温度中读取粗略的月经周期阶段，完全在你的设备上。它仅供了解参考：不是避孕手段，不是生育力预测工具，也不是医疗服务。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoop 可以從你的夜間皮膚溫度中讀取粗略的月經週期階段，完全在你的裝置上。它僅供了解參考：不是避孕手段，不是生育力預測工具，也不是醫療服務。"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoop może odczytać zgrubną fazę cyklu miesiączkowego na podstawie nocnej temperatury skóry, całkowicie na Twoim urządzeniu. To tylko świadomość: nie antykoncepcja, nie wskaźnik płodności, nie usługa medyczna."
+          }
+        }
+      }
+    },
     "NOOP can read a coarse menstrual-cycle phase from your nightly skin temperature, entirely on your device. It is awareness only: not contraception, not a fertility predictor, not a medical service.": {
       "localizations": {
         "de": {
